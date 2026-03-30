@@ -245,6 +245,12 @@
       <input class="form-control" id="f-tenant" type="text" value="default" />
     </div>
 
+    <div class="mb-3">
+      <label class="form-label">Task Skill <span style="color:var(--text-muted); font-weight:400; text-transform:none;">(optional — paste skill.md content for domain-specific instructions)</span></label>
+      <textarea class="form-control" id="f-skill" rows="4"
+        placeholder="## Role&#10;You are a specialist in...&#10;&#10;## Rules&#10;- Always..."></textarea>
+    </div>
+
     <div style="display:flex; gap:10px; margin-top:20px;">
       <button class="btn-cancel" onclick="closeModal()">Cancel</button>
       <button class="btn-submit" id="submit-btn" onclick="submitTask()">
@@ -349,7 +355,12 @@ function renderTaskDetail(task) {
         <span style="font-size:11px; color:var(--text-muted); font-family:monospace;">${task.task_id}</span>
       </div>
     </div>
-    <div style="text-align:right; flex-shrink:0;">
+    <div style="text-align:right; flex-shrink:0; display:flex; align-items:center; gap:8px;">
+      ${task.pr_url ? `
+        <a href="${task.pr_url}" target="_blank" style="font-size:11px; padding:4px 10px; border-radius:6px; background:var(--accent-dim); border:1px solid var(--accent); color:var(--accent); text-decoration:none;">
+          <i class="fas fa-code-pull-request"></i> View PR
+        </a>
+      ` : ''}
       ${task.status === 'running' || task.status === 'planning' ? `
         <button onclick="cancelTask('${task.task_id}')" style="font-size:11px; padding:4px 10px; border-radius:6px; background:transparent; border:1px solid var(--danger); color:var(--danger); cursor:pointer;">
           <i class="fas fa-stop"></i> Cancel
@@ -531,12 +542,14 @@ async function submitTask() {
   btn.innerHTML = '<span class="spinner" style="width:14px;height:14px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px;"></span>Launching…';
 
   try {
+    const skillContent = document.getElementById('f-skill').value.trim();
     const body = {
       goal,
       repo_url:             document.getElementById('f-repo').value.trim() || null,
       max_cost_usd:         parseFloat(document.getElementById('f-cost').value) || 5.0,
       max_runtime_minutes:  parseInt(document.getElementById('f-runtime').value) || 60,
       tenant_id:            document.getElementById('f-tenant').value.trim() || 'default',
+      task_skill:           skillContent || null,
     };
 
     const r = await fetch(`${API}/v1/tasks`, {

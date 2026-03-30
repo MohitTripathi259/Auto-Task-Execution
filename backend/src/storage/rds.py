@@ -73,6 +73,8 @@ class Task(Base):
     error = Column(Text)
     report_s3_key = Column(String)
     idempotency_key = Column(String, unique=True, index=True)
+    task_skill_content = Column(Text)   # task-specific skill markdown uploaded at submission
+    pr_url = Column(String)             # GitHub PR URL if created by github_pr skill
 
 
 class Step(Base):
@@ -133,7 +135,24 @@ class TestRun(Base):
 
 def init_db() -> None:
     Base.metadata.create_all(bind=engine)
+    # Migrate new columns onto existing tables (idempotent)
+    _run_migrations()
     logger.info("db.initialized")
+
+
+def _run_migrations() -> None:
+    """Add any new columns that may not exist in pre-existing databases."""
+    from sqlalchemy import text
+    migrations = [
+        "ALTER TABLE tasks ADD COLUMN IF NOT EXISTS task_skill_content TEXT",
+        "ALTER TABLE tasks ADD COLUMN IF NOT EXISTS pr_url VARCHAR",
+    ]
+    with engine.begin() as conn:
+        for sql in migrations:
+            try:
+                conn.execute(text(sql))
+            except Exception:
+                pass  # column already exists or DB doesn't support IF NOT EXISTS
 
 
 @contextmanager

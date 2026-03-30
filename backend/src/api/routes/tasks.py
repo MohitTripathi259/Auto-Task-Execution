@@ -47,6 +47,7 @@ async def submit_task(request: CreateTaskRequest, background_tasks: BackgroundTa
             repo_url=request.repo_url,
             base_branch=request.base_branch,
             idempotency_key=idem_key,
+            task_skill_content=request.task_skill or None,
             policy={
                 "max_cost_usd": request.max_cost_usd,
                 "max_runtime_minutes": request.max_runtime_minutes,
@@ -105,6 +106,7 @@ async def get_task_status(task_id: str):
             "updated_at": task.updated_at.isoformat() if task.updated_at else None,
             "completed_at": task.completed_at.isoformat() if task.completed_at else None,
             "error": task.error,
+            "pr_url": task.pr_url,
         }
     return task_data
 

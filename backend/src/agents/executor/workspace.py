@@ -68,6 +68,10 @@ class Workspace:
         result = self._git("rev-parse", "HEAD")
         return result.strip() if result else "0000000"
 
+    def current_branch(self) -> str:
+        result = self._git("rev-parse", "--abbrev-ref", "HEAD")
+        return result.strip() if result else self.base_branch
+
     def create_branch(self, name: str) -> str:
         self._git("checkout", "-b", name)
         logger.info("workspace.branch_created", branch=name)

@@ -81,11 +81,15 @@ def exists(key: str) -> bool:
 
 
 def presigned_url(key: str, expires_in: int = 3600) -> str:
-    return _get_client().generate_presigned_url(
+    url = _get_client().generate_presigned_url(
         "get_object",
         Params={"Bucket": settings.S3_BUCKET, "Key": key},
         ExpiresIn=expires_in,
     )
+    # In local mode the URL contains the internal Docker hostname — rewrite for browser access
+    if settings.APP_ENV == "local":
+        url = url.replace("http://localstack:4566", "http://localhost:4566")
+    return url
 
 
 def ensure_bucket_exists() -> None:

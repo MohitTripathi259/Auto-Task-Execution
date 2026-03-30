@@ -31,6 +31,7 @@ class CreateTaskRequest(BaseModel):
     max_cost_usd: float = Field(default=8.0, ge=0.5, le=50.0)
     max_runtime_minutes: int = Field(default=60, ge=5, le=480)
     idempotency_key: Optional[str] = None
+    task_skill: Optional[str] = Field(default=None, description="Task-specific skill markdown (paste content or leave blank)")
 
 
 class ApprovalDecision(BaseModel):
@@ -68,6 +69,7 @@ class TaskResponse(BaseModel):
     updated_at: datetime
     completed_at: Optional[datetime] = None
     error: Optional[str] = None
+    pr_url: Optional[str] = None
 
 
 class TaskSubmitResponse(BaseModel):
