@@ -36,7 +36,7 @@ def create_plan(
         system=system,
         user=user,
         model=settings.CLAUDE_PLANNER_MODEL,
-        max_tokens=2048,
+        max_tokens=4096,
         temperature=0.1,
     )
 
@@ -62,15 +62,28 @@ Break this into concrete steps. Return only the JSON plan."""
 
 def _parse_plan(raw: str, goal: str) -> dict:
     text = raw.strip()
-    if text.startswith("```"):
-        lines = text.splitlines()
-        text = "\n".join(lines[1:-1]) if lines[-1].strip() == "```" else "\n".join(lines[1:])
+
+    # Strip any markdown code fences: ```json ... ``` or ``` ... ```
+    if "```" in text:
+        import re
+        match = re.search(r"```(?:json)?\s*([\s\S]*?)```", text)
+        if match:
+            text = match.group(1).strip()
+
+    # Try to extract JSON object if there's surrounding prose
+    if not text.startswith("{"):
+        import re
+        match = re.search(r"\{[\s\S]*\}", text)
+        if match:
+            text = match.group(0)
+
     try:
         plan = json.loads(text)
         _validate_plan_schema(plan)
+        logger.info("planner.parse_success", steps=len(plan.get("steps", [])))
         return plan
     except (json.JSONDecodeError, KeyError, ValueError) as exc:
-        logger.warning("planner.parse_failed", error=str(exc), raw_preview=raw[:200])
+        logger.warning("planner.parse_failed", error=str(exc), raw_preview=raw[:400])
         return _fallback_plan(goal)
 
 

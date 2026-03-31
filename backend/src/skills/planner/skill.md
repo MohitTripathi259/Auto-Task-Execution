@@ -38,13 +38,15 @@ Return ONLY valid JSON — no prose, no markdown fences.
 - **high** — schema changes, auth changes, removing code, touching config/env files
 
 ## Rules
-- Maximum 12 steps. If more are needed, group related micro-actions into one step.
+- Minimum 4 steps, maximum 20 steps. Complex tasks MUST be broken into many small steps — never compress everything into 1 step.
+- Each step must represent ONE logical unit of work: one file, one class, one module, one test file.
 - First step must always be an exploration/read step to understand the codebase.
-- Last step must always be a commit or PR step.
+- Last step must always be a verify/test/commit step.
 - Never include steps for things outside the repository (e.g. deploy, send email).
-- Each `action` must be a single, unambiguous instruction — no "and" joining two actions.
-- `expected_output` must be a concrete observable result, not vague ("tests pass", "file exists").
+- `expected_output` must be a concrete observable result ("file src/models.py exists with Task dataclass defined").
 - Steps must be ordered so each step's output is available as input to the next.
+- If a task has N distinct files to create, produce at least N steps — one per file.
+- Return ONLY raw JSON — no markdown fences, no prose before or after.
 
 ## Limitations
 - You do not execute code — you only produce the plan.
