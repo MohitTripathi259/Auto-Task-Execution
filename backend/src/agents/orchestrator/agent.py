@@ -214,13 +214,19 @@ async def run(task_id: str, run_id: str, start_from_index: int = 0) -> dict:
 
                 await asyncio.sleep(0.2)
 
-            # Capture the feature branch name from the workspace
+            # Capture feature branch + push to remote (must happen before teardown)
             try:
                 feature_branch = ws.current_branch()
             except Exception:
                 feature_branch = None
 
-        # ── 4. GitHub PR (optional — only if token + repo configured) ─────────
+            if feature_branch and feature_branch not in (base_branch, "main", "master"):
+                pushed = ws.push_branch(feature_branch)
+                dynamo.put_event(run_id, "workspace.branch_pushed", {
+                    "branch": feature_branch, "pushed": pushed,
+                })
+
+        # ── 4. Open GitHub PR (optional) ──────────────────────────────────────
         pr_url: str | None = None
         if repo_url and feature_branch and feature_branch not in (base_branch, "main", "master"):
             from src.skills.github_pr.execution import create_pull_request
