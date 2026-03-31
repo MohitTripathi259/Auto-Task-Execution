@@ -38,8 +38,9 @@ Return ONLY valid JSON — no prose, no markdown fences.
 - **high** — schema changes, auth changes, removing code, touching config/env files
 
 ## Rules
-- Minimum 4 steps, maximum 20 steps. Complex tasks MUST be broken into many small steps — never compress everything into 1 step.
-- Each step must represent ONE logical unit of work: one file, one class, one module, one test file.
+- Number of steps must reflect actual task complexity — a simple task can be 2-3 steps, a complex task can be 15+. Never force a fixed count.
+- Never put the entire task into a single step. Always break into sub-steps even if the task is small.
+- Each step must represent ONE logical unit of work: one file, one module, one concern.
 - First step must always be an exploration/read step to understand the codebase.
 - Last step must always be a verify/test/commit step.
 - Never include steps for things outside the repository (e.g. deploy, send email).
